@@ -9,6 +9,7 @@ import {
   RegisterUserDto,
   ResetPasswordDto,
   SendOtpDto,
+  UpdateProfileDto,
   VerifyOtpDto,
 } from "../dtos/user.dto";
 import { IUser } from "../models/user.model";
@@ -99,6 +100,14 @@ export class UserService {
 
   async getById(id: string) {
     const user = await userRepository.findById(id);
+    if (!user) {
+      throw HttpError.notFound("User not found");
+    }
+    return sanitizeUser(user);
+  }
+
+  async updateProfile(id: string, dto: UpdateProfileDto) {
+    const user = await userRepository.updateById(id, dto);
     if (!user) {
       throw HttpError.notFound("User not found");
     }
