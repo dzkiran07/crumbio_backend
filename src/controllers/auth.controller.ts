@@ -5,6 +5,7 @@ import {
   validateRegisterUserDto,
   validateResetPasswordDto,
   validateSendOtpDto,
+  validateUpdateProfileDto,
   validateVerifyOtpDto,
 } from "../dtos/user.dto";
 import { userService } from "../services/user.service";
@@ -27,6 +28,15 @@ export const me = asyncHandler(async (req: Request, res: Response) => {
     throw HttpError.unauthorized();
   }
   const user = await userService.getById(req.user.userId);
+  res.status(200).json(user);
+});
+
+export const updateMe = asyncHandler(async (req: Request, res: Response) => {
+  if (!req.user) {
+    throw HttpError.unauthorized();
+  }
+  const dto = validateUpdateProfileDto(req.body);
+  const user = await userService.updateProfile(req.user.userId, dto);
   res.status(200).json(user);
 });
 
