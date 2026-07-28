@@ -16,7 +16,6 @@ export enum FulfillmentType {
 
 export enum PaymentMethod {
   KHALTI = "khalti",
-  ESEWA = "esewa",
   CASH_ON_DELIVERY = "cash_on_delivery",
 }
 
