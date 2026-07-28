@@ -33,10 +33,4 @@ export const config = {
     secretKey: process.env.KHALTI_SECRET_KEY ?? "",
     baseUrl: process.env.KHALTI_BASE_URL ?? "https://a.khalti.com/api/v2",
   },
-
-  esewa: {
-    merchantCode: process.env.ESEWA_MERCHANT_CODE ?? "",
-    secretKey: process.env.ESEWA_SECRET_KEY ?? "",
-    baseUrl: process.env.ESEWA_BASE_URL ?? "https://rc-epay.esewa.com.np/api/epay",
-  },
 };
