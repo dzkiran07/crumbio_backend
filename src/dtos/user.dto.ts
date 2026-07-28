@@ -32,6 +32,12 @@ export interface ResetPasswordDto {
   newPassword: string;
 }
 
+export interface UpdateProfileDto {
+  fullName?: string;
+  phone?: string;
+  address?: string;
+}
+
 function assertNonEmptyString(value: unknown, field: string): string {
   if (typeof value !== "string" || value.trim().length === 0) {
     throw HttpError.badRequest(`${field} is required`);
@@ -94,4 +100,18 @@ export function validateResetPasswordDto(body: Record<string, unknown>): ResetPa
     otp: assertNonEmptyString(body.otp, "otp"),
     newPassword,
   };
+}
+
+export function validateUpdateProfileDto(body: Record<string, unknown>): UpdateProfileDto {
+  const dto: UpdateProfileDto = {};
+  if (body.fullName !== undefined) {
+    dto.fullName = assertNonEmptyString(body.fullName, "fullName");
+  }
+  if (body.phone !== undefined) {
+    dto.phone = assertNonEmptyString(body.phone, "phone");
+  }
+  if (body.address !== undefined) {
+    dto.address = typeof body.address === "string" ? body.address.trim() : "";
+  }
+  return dto;
 }
