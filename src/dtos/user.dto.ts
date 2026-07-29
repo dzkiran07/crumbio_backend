@@ -38,6 +38,15 @@ export interface UpdateProfileDto {
   address?: string;
 }
 
+export interface ChangePasswordDto {
+  currentPassword: string;
+  newPassword: string;
+}
+
+export interface DeleteAccountDto {
+  currentPassword: string;
+}
+
 function assertNonEmptyString(value: unknown, field: string): string {
   if (typeof value !== "string" || value.trim().length === 0) {
     throw HttpError.badRequest(`${field} is required`);
@@ -99,6 +108,23 @@ export function validateResetPasswordDto(body: Record<string, unknown>): ResetPa
     email: assertNonEmptyString(body.email, "email").toLowerCase(),
     otp: assertNonEmptyString(body.otp, "otp"),
     newPassword,
+  };
+}
+
+export function validateChangePasswordDto(body: Record<string, unknown>): ChangePasswordDto {
+  const newPassword = assertNonEmptyString(body.newPassword, "newPassword");
+  if (newPassword.length < 6) {
+    throw HttpError.badRequest("Password must be at least 6 characters");
+  }
+  return {
+    currentPassword: assertNonEmptyString(body.currentPassword, "currentPassword"),
+    newPassword,
+  };
+}
+
+export function validateDeleteAccountDto(body: Record<string, unknown>): DeleteAccountDto {
+  return {
+    currentPassword: assertNonEmptyString(body.currentPassword, "currentPassword"),
   };
 }
 
