@@ -45,6 +45,20 @@ export class ProductService {
     return updated;
   }
 
+  async addImage(id: string, imagePath: string, requesterId: string, requesterRole: UserRole) {
+    const existing = await this.getById(id);
+    if (existing.baker.toString() !== requesterId && requesterRole !== UserRole.ADMIN) {
+      throw HttpError.forbidden("You do not own this listing");
+    }
+
+    const images = [...existing.images, imagePath];
+    const updated = await productRepository.updateById(id, { images });
+    if (!updated) {
+      throw HttpError.notFound("Product not found");
+    }
+    return updated;
+  }
+
   async remove(id: string, requesterId: string, requesterRole: UserRole) {
     const existing = await this.getById(id);
     if (existing.baker.toString() !== requesterId && requesterRole !== UserRole.ADMIN) {
