@@ -42,8 +42,11 @@ export const deleteProduct = asyncHandler(async (req: Request, res: Response) =>
 });
 
 export const uploadProductImage = asyncHandler(async (req: Request, res: Response) => {
+  if (!req.user) throw HttpError.unauthorized();
   if (!req.file) {
     throw HttpError.badRequest("No image file uploaded");
   }
-  res.status(201).json({ imagePath: `/uploads/${req.file.filename}` });
+  const imagePath = `/uploads/${req.file.filename}`;
+  const product = await productService.addImage(req.params.id, imagePath, req.user.userId, req.user.role);
+  res.status(201).json(product);
 });
