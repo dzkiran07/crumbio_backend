@@ -5,6 +5,8 @@ import { config } from "../config";
 import { HttpError } from "../errors/http-error";
 import { userRepository } from "../repositories/user.repository";
 import {
+  ChangePasswordDto,
+  DeleteAccountDto,
   LoginUserDto,
   RegisterUserDto,
   ResetPasswordDto,
@@ -112,6 +114,52 @@ export class UserService {
       throw HttpError.notFound("User not found");
     }
     return sanitizeUser(user);
+  }
+
+  async updateProfileImage(id: string, imagePath: string) {
+    const user = await userRepository.updateById(id, { profileImage: imagePath });
+    if (!user) {
+      throw HttpError.notFound("User not found");
+    }
+    return sanitizeUser(user);
+  }
+
+  async changePassword(id: string, dto: ChangePasswordDto) {
+    const user = await userRepository.findById(id);
+    if (!user) {
+      throw HttpError.notFound("User not found");
+    }
+
+    const isMatch = await bcrypt.compare(dto.currentPassword, user.passwordHash);
+    if (!isMatch) {
+      // 400, not 401 — the caller is already authenticated (valid JWT); this
+      // is a validation failure, and 401 here would trip the frontend's
+      // global "session expired" interceptor and log the user out.
+      throw HttpError.badRequest("Current password is incorrect");
+    }
+
+    const passwordHash = await bcrypt.hash(dto.newPassword, SALT_ROUNDS);
+    await userRepository.updateById(id, { passwordHash });
+
+    return { message: "Password changed successfully" };
+  }
+
+  async deleteAccount(id: string, dto: DeleteAccountDto) {
+    const user = await userRepository.findById(id);
+    if (!user) {
+      throw HttpError.notFound("User not found");
+    }
+
+    const isMatch = await bcrypt.compare(dto.currentPassword, user.passwordHash);
+    if (!isMatch) {
+      // 400, not 401 — the caller is already authenticated (valid JWT); this
+      // is a validation failure, and 401 here would trip the frontend's
+      // global "session expired" interceptor and log the user out.
+      throw HttpError.badRequest("Current password is incorrect");
+    }
+
+    await userRepository.updateById(id, { isActive: false });
+    return { message: "Account deleted successfully" };
   }
 
   async sendForgotPasswordOtp(dto: SendOtpDto) {
