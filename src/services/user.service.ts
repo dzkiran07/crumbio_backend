@@ -1,6 +1,5 @@
 import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken";
-import nodemailer from "nodemailer";
 import { config } from "../config";
 import { HttpError } from "../errors/http-error";
 import { userRepository } from "../repositories/user.repository";
@@ -9,44 +8,16 @@ import {
   DeleteAccountDto,
   LoginUserDto,
   RegisterUserDto,
-  ResetPasswordDto,
-  SendOtpDto,
   UpdateProfileDto,
-  VerifyOtpDto,
 } from "../dtos/user.dto";
 import { IUser } from "../models/user.model";
 import { JwtPayload } from "../types/user.type";
 
 const SALT_ROUNDS = 10;
-const OTP_TTL_MINUTES = 10;
-
-function generateOtp(): string {
-  return String(Math.floor(100000 + Math.random() * 900000));
-}
 
 function signToken(user: IUser): string {
   const payload: JwtPayload = { userId: user._id.toString(), role: user.role };
   return jwt.sign(payload, config.jwt.secret, { expiresIn: config.jwt.expiresIn } as jwt.SignOptions);
-}
-
-async function sendOtpEmail(email: string, otp: string): Promise<void> {
-  if (!config.mail.host) {
-    console.log(`[mail:otp] (SMTP not configured) OTP for ${email}: ${otp}`);
-    return;
-  }
-
-  const transporter = nodemailer.createTransport({
-    host: config.mail.host,
-    port: config.mail.port,
-    auth: { user: config.mail.user, pass: config.mail.pass },
-  });
-
-  await transporter.sendMail({
-    from: config.mail.from,
-    to: email,
-    subject: "Crumbio password reset code",
-    text: `Your Crumbio verification code is ${otp}. It expires in ${OTP_TTL_MINUTES} minutes.`,
-  });
 }
 
 function sanitizeUser(user: IUser) {
@@ -160,54 +131,6 @@ export class UserService {
 
     await userRepository.updateById(id, { isActive: false });
     return { message: "Account deleted successfully" };
-  }
-
-  async sendForgotPasswordOtp(dto: SendOtpDto) {
-    const user = await userRepository.findByEmail(dto.email);
-    if (!user) {
-      throw HttpError.notFound("No account found with this email");
-    }
-
-    const otp = generateOtp();
-    const expiresAt = new Date(Date.now() + OTP_TTL_MINUTES * 60 * 1000);
-    await userRepository.setOtp(dto.email, otp, expiresAt);
-    await sendOtpEmail(dto.email, otp);
-
-    return { message: "OTP sent to email" };
-  }
-
-  async verifyForgotPasswordOtp(dto: VerifyOtpDto) {
-    const user = await userRepository.findByEmail(dto.email, true);
-    if (!user || !user.otp || !user.otpExpiresAt) {
-      throw HttpError.badRequest("No OTP request found for this email");
-    }
-    if (user.otp !== dto.otp) {
-      throw HttpError.badRequest("Invalid OTP");
-    }
-    if (user.otpExpiresAt.getTime() < Date.now()) {
-      throw HttpError.badRequest("OTP has expired");
-    }
-
-    return { message: "OTP verified" };
-  }
-
-  async resetForgotPassword(dto: ResetPasswordDto) {
-    const user = await userRepository.findByEmail(dto.email, true);
-    if (!user || !user.otp || !user.otpExpiresAt) {
-      throw HttpError.badRequest("No OTP request found for this email");
-    }
-    if (user.otp !== dto.otp) {
-      throw HttpError.badRequest("Invalid OTP");
-    }
-    if (user.otpExpiresAt.getTime() < Date.now()) {
-      throw HttpError.badRequest("OTP has expired");
-    }
-
-    const passwordHash = await bcrypt.hash(dto.newPassword, SALT_ROUNDS);
-    await userRepository.updateById(user._id.toString(), { passwordHash });
-    await userRepository.clearOtp(user._id.toString());
-
-    return { message: "Password reset successful" };
   }
 
   async listUsers(role?: string) {

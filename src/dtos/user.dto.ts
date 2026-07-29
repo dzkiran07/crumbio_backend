@@ -17,21 +17,6 @@ export interface LoginUserDto {
   password: string;
 }
 
-export interface SendOtpDto {
-  email: string;
-}
-
-export interface VerifyOtpDto {
-  email: string;
-  otp: string;
-}
-
-export interface ResetPasswordDto {
-  email: string;
-  otp: string;
-  newPassword: string;
-}
-
 export interface UpdateProfileDto {
   fullName?: string;
   phone?: string;
@@ -85,29 +70,6 @@ export function validateLoginUserDto(body: Record<string, unknown>): LoginUserDt
   return {
     email: assertNonEmptyString(body.email, "email").toLowerCase(),
     password: assertNonEmptyString(body.password, "password"),
-  };
-}
-
-export function validateSendOtpDto(body: Record<string, unknown>): SendOtpDto {
-  return { email: assertNonEmptyString(body.email, "email").toLowerCase() };
-}
-
-export function validateVerifyOtpDto(body: Record<string, unknown>): VerifyOtpDto {
-  return {
-    email: assertNonEmptyString(body.email, "email").toLowerCase(),
-    otp: assertNonEmptyString(body.otp, "otp"),
-  };
-}
-
-export function validateResetPasswordDto(body: Record<string, unknown>): ResetPasswordDto {
-  const newPassword = assertNonEmptyString(body.newPassword, "newPassword");
-  if (newPassword.length < 6) {
-    throw HttpError.badRequest("Password must be at least 6 characters");
-  }
-  return {
-    email: assertNonEmptyString(body.email, "email").toLowerCase(),
-    otp: assertNonEmptyString(body.otp, "otp"),
-    newPassword,
   };
 }
 

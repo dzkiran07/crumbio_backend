@@ -12,8 +12,6 @@ export interface IUser extends Document {
   address?: string;
   profileImage?: string;
   isActive: boolean;
-  otp?: string;
-  otpExpiresAt?: Date;
   createdAt: Date;
   updatedAt: Date;
 }
@@ -29,8 +27,6 @@ const userSchema = new Schema<IUser>(
     address: { type: String, trim: true },
     profileImage: { type: String },
     isActive: { type: Boolean, default: true },
-    otp: { type: String, select: false },
-    otpExpiresAt: { type: Date, select: false },
   },
   { timestamps: true }
 );

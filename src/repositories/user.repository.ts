@@ -10,9 +10,8 @@ export class UserRepository {
     return UserModel.findById(id);
   }
 
-  findByEmail(email: string, withSecrets = false) {
-    const query = UserModel.findOne({ email: email.toLowerCase() });
-    return withSecrets ? query.select("+otp +otpExpiresAt +passwordHash") : query;
+  findByEmail(email: string) {
+    return UserModel.findOne({ email: email.toLowerCase() });
   }
 
   findByEmailWithPassword(email: string) {
@@ -25,18 +24,6 @@ export class UserRepository {
 
   updateById(id: string, data: Partial<IUser>) {
     return UserModel.findByIdAndUpdate(id, data, { new: true });
-  }
-
-  setOtp(email: string, otp: string, expiresAt: Date) {
-    return UserModel.findOneAndUpdate(
-      { email: email.toLowerCase() },
-      { otp, otpExpiresAt: expiresAt },
-      { new: true }
-    ).select("+otp +otpExpiresAt");
-  }
-
-  clearOtp(id: string) {
-    return UserModel.findByIdAndUpdate(id, { $unset: { otp: 1, otpExpiresAt: 1 } });
   }
 }
 
