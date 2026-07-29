@@ -1,6 +1,8 @@
 import { Request, Response } from "express";
 import { HttpError } from "../errors/http-error";
 import {
+  validateChangePasswordDto,
+  validateDeleteAccountDto,
   validateLoginUserDto,
   validateRegisterUserDto,
   validateResetPasswordDto,
@@ -38,6 +40,35 @@ export const updateMe = asyncHandler(async (req: Request, res: Response) => {
   const dto = validateUpdateProfileDto(req.body);
   const user = await userService.updateProfile(req.user.userId, dto);
   res.status(200).json(user);
+});
+
+export const uploadProfileImage = asyncHandler(async (req: Request, res: Response) => {
+  if (!req.user) {
+    throw HttpError.unauthorized();
+  }
+  if (!req.file) {
+    throw HttpError.badRequest("No image file uploaded");
+  }
+  const user = await userService.updateProfileImage(req.user.userId, `/uploads/${req.file.filename}`);
+  res.status(200).json(user);
+});
+
+export const changePassword = asyncHandler(async (req: Request, res: Response) => {
+  if (!req.user) {
+    throw HttpError.unauthorized();
+  }
+  const dto = validateChangePasswordDto(req.body);
+  const result = await userService.changePassword(req.user.userId, dto);
+  res.status(200).json(result);
+});
+
+export const deleteAccount = asyncHandler(async (req: Request, res: Response) => {
+  if (!req.user) {
+    throw HttpError.unauthorized();
+  }
+  const dto = validateDeleteAccountDto(req.body);
+  const result = await userService.deleteAccount(req.user.userId, dto);
+  res.status(200).json(result);
 });
 
 export const sendForgotPasswordOtp = asyncHandler(async (req: Request, res: Response) => {
