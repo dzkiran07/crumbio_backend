@@ -51,8 +51,6 @@ export class ProductService {
       throw HttpError.forbidden("You do not own this listing");
     }
 
-    // Replaces rather than appends — the app only ever displays images[0],
-    // so a re-upload is meant to swap the picture, not stack duplicates.
     const images = [imagePath];
     const updated = await productRepository.updateById(id, { images });
     if (!updated) {

@@ -103,9 +103,6 @@ export class UserService {
 
     const isMatch = await bcrypt.compare(dto.currentPassword, user.passwordHash);
     if (!isMatch) {
-      // 400, not 401 — the caller is already authenticated (valid JWT); this
-      // is a validation failure, and 401 here would trip the frontend's
-      // global "session expired" interceptor and log the user out.
       throw HttpError.badRequest("Current password is incorrect");
     }
 
@@ -123,9 +120,6 @@ export class UserService {
 
     const isMatch = await bcrypt.compare(dto.currentPassword, user.passwordHash);
     if (!isMatch) {
-      // 400, not 401 — the caller is already authenticated (valid JWT); this
-      // is a validation failure, and 401 here would trip the frontend's
-      // global "session expired" interceptor and log the user out.
       throw HttpError.badRequest("Current password is incorrect");
     }
 
